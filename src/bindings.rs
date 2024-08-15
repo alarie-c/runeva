@@ -24,7 +24,6 @@ pub fn bindings<'a>() -> HashMap<&'a str, KeyEvent> {
             state: KeyEventState::NONE,
         }
     );
-
     map.insert(
         "cursor_down",
         KeyEvent {
@@ -34,7 +33,6 @@ pub fn bindings<'a>() -> HashMap<&'a str, KeyEvent> {
             state: KeyEventState::NONE,
         }
     );
-
     map.insert(
         "cursor_right",
         KeyEvent {
@@ -44,7 +42,6 @@ pub fn bindings<'a>() -> HashMap<&'a str, KeyEvent> {
             state: KeyEventState::NONE,
         }
     );
-
     map.insert(
         "cursor_left",
         KeyEvent {

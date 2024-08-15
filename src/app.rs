@@ -61,7 +61,10 @@ impl App {
                 if let Event::Key(event) = event::read()? {
                     self.msg_stack.borrow_mut().push(input::handle_select_input(event));
                     return Ok(true);
-                } 
+                } else if let Event::Resize(x, y) = event::read()? {
+                    self.termout.term_size = (x, y);
+                    return Ok(true);
+                }
             }
         }
     }
