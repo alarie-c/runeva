@@ -2,6 +2,7 @@ use std::io::{self, stdout, Write};
 
 use crossterm::{cursor, execute, queue, terminal};
 
+#[derive(Debug)]
 pub struct TerminalOutput {
     pub term_size: (u16, u16),
     pub cursor: (u16, u16),

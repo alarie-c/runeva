@@ -1,29 +1,27 @@
 use std::{collections::HashMap, fs};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
-pub fn parse_bindings<'a>() -> HashMap<&'a str, KeyEvent> {
-    let mut map: HashMap<&str, KeyEvent> = HashMap::new();
-    let cfg = fs::read_to_string("bindings.cfg").unwrap();
+pub fn parse_bindings<'a>() -> HashMap<String, KeyEvent> {
+    let mut map: HashMap<String, KeyEvent> = HashMap::new();
+    let cfg = fs::read_to_string("src/utils/bindings.cfg").unwrap();
 
-    cfg.lines().into_iter().map(|x| {
-        let mapping = parse_line(x);
+    for line in cfg.lines() {
+        let mapping = parse_line(line);
         map.insert(mapping.0, mapping.1);
-    });
+    }
 
     map
 }
 
-fn parse_line(line: &str) -> (&str, KeyEvent) {
+fn parse_line(line: &str) -> (String, KeyEvent) {
     let mut code = KeyCode::Char('.');
     let mut modifiers = KeyModifiers::NONE;
     let kind = KeyEventKind::Press;
     let state = KeyEventState::NONE;
 
-    let split: Vec<&str> = line.split_whitespace().to_owned().collect();
-    let left = split.get(0).unwrap().to_owned();
-    let right = split.get(1).unwrap().to_owned();
-
-    drop(line);
+    let split: Vec<&str> = line.split_whitespace().collect();
+    let left = split.get(0).unwrap().to_string();
+    let right = split.get(1).unwrap().to_string();
     
     for substr in left.split("+") {
         match substr {
@@ -47,6 +45,6 @@ fn parse_line(line: &str) -> (&str, KeyEvent) {
         state
     };
 
-    (right, e)
+    (right.to_string(), e)
 }
 

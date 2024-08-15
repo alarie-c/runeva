@@ -2,6 +2,7 @@ use std::{cell::RefCell, io, time::Duration};
 use crossterm::{event::{self, Event}, terminal};
 use crate::{bindings::Bindings, input, terminal_out::TerminalOutput};
 
+#[derive(Debug)]
 pub enum Mode {
     Select,
     Cmd,
@@ -9,6 +10,7 @@ pub enum Mode {
     Files,
 }
 
+#[derive(Debug)]
 pub enum Msg {
     // Application
     Quit,
@@ -21,14 +23,15 @@ pub enum Msg {
     Left,
 }
 
-pub struct App<'a> {
+#[derive(Debug)]
+pub struct App {
     pub mode: Mode,
     pub termout: TerminalOutput,
-    pub bindings: Bindings<'a>,
+    pub bindings: Bindings,
     pub msg_stack: RefCell<Vec<Msg>>,
 }
 
-impl<'a> App<'a> {
+impl App {
     pub fn new() -> Self {
         terminal::enable_raw_mode().expect("Error enabling raw mode");
         TerminalOutput::clear().unwrap();
@@ -109,7 +112,7 @@ impl<'a> App<'a> {
     
 }
 
-impl<'a> Drop for App<'a> {
+impl Drop for App {
     fn drop(&mut self) {
         TerminalOutput::clear().expect("Error clearing terminal");
         terminal::disable_raw_mode().expect("Error disabling raw mode");

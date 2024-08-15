@@ -3,9 +3,10 @@ use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifi
 
 use crate::utils;
 
-pub struct Bindings<'a> { pub bindings: HashMap<&'a str, KeyEvent>}
+#[derive(Debug)]
+pub struct Bindings { pub bindings: HashMap<String, KeyEvent>}
 
-impl<'a> Bindings<'a> {
+impl Bindings {
     pub fn new() -> Self {
         Self {
             bindings: utils::cfg_parser::parse_bindings()
