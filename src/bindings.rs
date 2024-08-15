@@ -15,5 +15,45 @@ pub fn bindings<'a>() -> HashMap<&'a str, KeyEvent> {
         }
     );
 
+    map.insert(
+        "cursor_up",
+        KeyEvent {
+            code: KeyCode::Up,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }
+    );
+
+    map.insert(
+        "cursor_down",
+        KeyEvent {
+            code: KeyCode::Down,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }
+    );
+
+    map.insert(
+        "cursor_right",
+        KeyEvent {
+            code: KeyCode::Right,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }
+    );
+
+    map.insert(
+        "cursor_left",
+        KeyEvent {
+            code: KeyCode::Left,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }
+    );
+
     map // Return map
 }

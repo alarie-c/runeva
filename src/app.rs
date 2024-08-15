@@ -1,6 +1,6 @@
-use std::{cell::RefCell, io, time::Duration};
+use std::{cell::RefCell, io::{self, Write}, time::Duration};
 use crossterm::{event::{self, Event}, terminal};
-use crate::input;
+use crate::{input, terminal_out::TerminalOutput};
 
 pub enum Mode {
     Select,
@@ -13,21 +13,33 @@ pub enum Msg {
     // Application
     Quit,
     None,
+
+    // Cursor
+    Up,
+    Down,
+    Right,
+    Left,
 }
 
 pub struct App {
     pub mode: Mode,
+    pub termout: TerminalOutput,
     pub msg_stack: RefCell<Vec<Msg>>,
 }
 
 impl App {
     pub fn new() -> Self {
         terminal::enable_raw_mode().expect("Error enabling raw mode");
-        
-        App {
+        TerminalOutput::clear().unwrap();
+
+        let mut a = App {
             mode: Mode::Select,
+            termout: TerminalOutput::new(),
             msg_stack: RefCell::new(Vec::new()),
-        }
+        };
+
+        a.termout.refresh().unwrap();
+        return a;
     }
 
     // Run method is a loop that polls key events every 500 ms
@@ -37,7 +49,9 @@ impl App {
     // Thus, it will react to any changes in the App struct
     pub fn run(&mut self) -> Result<bool, io::Error> {
         self.detect_input()?;
-        self.travese_msg_stack()
+        let s = self.travese_msg_stack();
+        self.termout.refresh()?;
+        s
     }
 
     fn detect_input(&mut self) -> Result<bool, io::Error> {
@@ -57,8 +71,31 @@ impl App {
        
         for m in stack.drain(..) {
             match m {
+                // Application
                 Msg::Quit => return Ok(false),
                 Msg::None => return Ok(true),
+
+                // Cursor movements
+                Msg::Up => {
+                    self.termout.cursor.1 = 
+                        (self.termout.cursor.1.saturating_sub(1)).clamp(0, self.termout.term_size.1);
+                    return Ok(true);
+                }
+                Msg::Down => {
+                    self.termout.cursor.1 = 
+                        (self.termout.cursor.1 + 1).clamp(0, self.termout.term_size.1);
+                    return Ok(true);
+                }
+                Msg::Left => {
+                    self.termout.cursor.0 = 
+                        (self.termout.cursor.0.saturating_sub(1)).clamp(0, self.termout.term_size.0);
+                    return Ok(true);
+                }
+                Msg::Right => {
+                    self.termout.cursor.0 = 
+                        (self.termout.cursor.0 + 1).clamp(0, self.termout.term_size.0);
+                    return Ok(true);
+                }
             };
         }
 
@@ -69,6 +106,7 @@ impl App {
 
 impl Drop for App {
     fn drop(&mut self) {
-        terminal::Clear(terminal::ClearType::All);
+        TerminalOutput::clear().expect("Error clearing terminal");
+        terminal::disable_raw_mode().expect("Error disabling raw mode");
     }
 }
