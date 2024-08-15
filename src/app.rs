@@ -1,6 +1,6 @@
-use std::{cell::RefCell, io::{self, Write}, time::Duration};
+use std::{cell::RefCell, io, time::Duration};
 use crossterm::{event::{self, Event}, terminal};
-use crate::{input, terminal_out::TerminalOutput};
+use crate::{bindings::Bindings, input, terminal_out::TerminalOutput};
 
 pub enum Mode {
     Select,
@@ -21,13 +21,14 @@ pub enum Msg {
     Left,
 }
 
-pub struct App {
+pub struct App<'a> {
     pub mode: Mode,
     pub termout: TerminalOutput,
+    pub bindings: Bindings<'a>,
     pub msg_stack: RefCell<Vec<Msg>>,
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn new() -> Self {
         terminal::enable_raw_mode().expect("Error enabling raw mode");
         TerminalOutput::clear().unwrap();
@@ -35,6 +36,7 @@ impl App {
         let mut a = App {
             mode: Mode::Select,
             termout: TerminalOutput::new(),
+            bindings: Bindings::new(),
             msg_stack: RefCell::new(Vec::new()),
         };
 
@@ -44,8 +46,8 @@ impl App {
 
     // Run method is a loop that polls key events every 500 ms
     // Everytime a key event is detected, it is matched and handled
-    // The Writer member handles all operations with the terminal
-    // The Writer is based on immediate-mode rendering
+    // The termout member handles all operations with the terminal
+    // termout is based on immediate-mode rendering
     // Thus, it will react to any changes in the App struct
     pub fn run(&mut self) -> Result<bool, io::Error> {
         self.detect_input()?;
@@ -59,7 +61,7 @@ impl App {
             if event::poll(Duration::from_millis(500))? {
                 // KeyEvents
                 if let Event::Key(event) = event::read()? {
-                    self.msg_stack.borrow_mut().push(input::handle_select_input(event));
+                    self.msg_stack.borrow_mut().push(input::handle_select_input(&self.bindings, event));
                     return Ok(true);
                 } else if let Event::Resize(x, y) = event::read()? {
                     self.termout.term_size = (x, y);
@@ -107,7 +109,7 @@ impl App {
     
 }
 
-impl Drop for App {
+impl<'a> Drop for App<'a> {
     fn drop(&mut self) {
         TerminalOutput::clear().expect("Error clearing terminal");
         terminal::disable_raw_mode().expect("Error disabling raw mode");
