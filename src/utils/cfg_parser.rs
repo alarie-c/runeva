@@ -14,7 +14,7 @@ pub fn parse_bindings<'a>() -> HashMap<String, KeyEvent> {
 }
 
 fn parse_line(line: &str) -> (String, KeyEvent) {
-    let mut code = KeyCode::Char('.');
+    let mut code = KeyCode::Char('~');
     let mut modifiers = KeyModifiers::NONE;
     let kind = KeyEventKind::Press;
     let state = KeyEventState::NONE;
@@ -33,7 +33,13 @@ fn parse_line(line: &str) -> (String, KeyEvent) {
             "right" => code = KeyCode::Right,
             "left" => code = KeyCode::Left,
 
+            "esc" => code = KeyCode::Esc,
+            "enter" => code = KeyCode::Enter,
+            "backspace" => code = KeyCode::Backspace,
+
             // Characters
+            // The only time this is matched is when anything is only 1 char
+            // All valid multi-character keys are matched above instead
             _ => code = KeyCode::Char(substr.chars().nth(0).unwrap()),
         }
     }
