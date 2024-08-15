@@ -2,7 +2,7 @@ use std::{cell::RefCell, io, time::Duration};
 use crossterm::{event::{self, Event}, terminal};
 use crate::{bindings::Bindings, input, terminal_out::TerminalOutput};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Mode {
     Select,
     Cmd,
@@ -21,23 +21,29 @@ pub enum Msg {
     Down,
     Right,
     Left,
+
+    // Modes
+    ModeSelect,
+    ModeCmd,
+    ModeEdit,
+    ModeFiles,
 }
 
 #[derive(Debug)]
-pub struct App {
-    pub mode: Mode,
-    pub termout: TerminalOutput,
+pub struct App<'a> {
+    pub mode: &'a Mode,
+    pub termout: TerminalOutput<'a>,
     pub bindings: Bindings,
     pub msg_stack: RefCell<Vec<Msg>>,
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn new() -> Self {
         terminal::enable_raw_mode().expect("Error enabling raw mode");
         TerminalOutput::clear().unwrap();
 
         let mut a = App {
-            mode: Mode::Select,
+            mode: &Mode::Select,
             termout: TerminalOutput::new(),
             bindings: Bindings::new(),
             msg_stack: RefCell::new(Vec::new()),
@@ -104,6 +110,30 @@ impl App {
                         (self.termout.cursor.0 + 1).clamp(0, self.termout.term_size.0);
                     return Ok(true);
                 }
+
+                // Mode Toggles
+                Msg::ModeSelect => {
+                    self.mode = &Mode::Select;
+                    self.termout.mode = &self.mode;
+                    return Ok(true);
+                }
+                Msg::ModeCmd => {
+                    self.mode = &Mode::Cmd;
+                    self.termout.mode = &self.mode;
+                    return Ok(true);
+                }
+                Msg::ModeEdit => {
+                    self.mode = &Mode::Edit;
+                    self.termout.mode = &self.mode;
+                    return Ok(true);
+                }
+                Msg::ModeFiles => {
+                    self.mode = &Mode::Files;
+                    self.termout.mode = &self.mode;
+                    return Ok(true);
+                }
+
+                _ => return Ok(true),
             };
         }
 
@@ -112,7 +142,7 @@ impl App {
     
 }
 
-impl Drop for App {
+impl<'a> Drop for App<'a> {
     fn drop(&mut self) {
         TerminalOutput::clear().expect("Error clearing terminal");
         terminal::disable_raw_mode().expect("Error disabling raw mode");

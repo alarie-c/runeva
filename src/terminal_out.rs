@@ -2,19 +2,23 @@ use std::io::{self, stdout, Write};
 
 use crossterm::{cursor, execute, queue, terminal};
 
+use crate::app::Mode;
+
 #[derive(Debug)]
-pub struct TerminalOutput {
+pub struct TerminalOutput<'a> {
     pub term_size: (u16, u16),
     pub cursor: (u16, u16),
+    pub mode: &'a Mode,
     draw_buffer: String,
     rows_buffer: Vec<String>,
     cmd_buffer: String,
 }
 
-impl TerminalOutput {
+impl<'a> TerminalOutput<'a> {
     pub fn new() -> Self {
         Self {
             term_size: terminal::size().unwrap_or((0u16, 0u16)),
+            mode: &Mode::Select,
             cursor: (0u16, 0u16),
             draw_buffer: String::new(),
             rows_buffer: Vec::new(),
@@ -28,7 +32,7 @@ impl TerminalOutput {
     }
 }
 
-impl TerminalOutput {
+impl<'a> TerminalOutput<'a> {
     pub fn refresh(&mut self) -> Result<(), io::Error> {
         let cpos = self.cursor; 
 
@@ -66,16 +70,25 @@ impl TerminalOutput {
             if row < (self.term_size.1 - 1) {
                 self.draw_buffer.push_str("\r\n");
             }
+
+            if row == self.term_size.1 { self.draw_cmd_prompt_row(); }
+
             stdout().flush()?;
         }
 
         Ok(())
     }
+
+    fn draw_cmd_prompt_row(&mut self) {
+        if self.mode == &Mode::Cmd {
+            self.draw_buffer.push_str("> ");
+        }
+    }
 }
 
 
 // Handles writing and flushing the draw_buffer to the terminal
-impl Write for TerminalOutput {
+impl<'a> Write for TerminalOutput<'a> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         match std::str::from_utf8(buf) {
             Ok(s) => {

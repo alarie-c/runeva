@@ -10,6 +10,9 @@ pub fn handle_select_input(b: &Bindings, e: KeyEvent) -> Msg {
         _ if &e == b.bindings.get("cursor_down").unwrap() => Msg::Down,
         _ if &e == b.bindings.get("cursor_right").unwrap() => Msg::Right,
         _ if &e == b.bindings.get("cursor_left").unwrap() => Msg::Left,
+
+        // Modes
+        _ if &e == b.bindings.get("open_cmd_prompt").unwrap() => Msg::ModeCmd,
         
         // Applications
         _ if &e == b.bindings.get("quit").unwrap() => Msg::Quit,
